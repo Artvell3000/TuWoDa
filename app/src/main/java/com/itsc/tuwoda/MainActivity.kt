@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
 
     val model = MyViewModel()
     private var mapViewModel: MapViewModel? = null
-
+    var s:Int = 1
     private lateinit var context: Context
     private lateinit var locationManager: LocationManager
     private lateinit var pLauncher: ActivityResultLauncher<String>
