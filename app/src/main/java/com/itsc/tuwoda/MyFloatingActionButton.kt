@@ -32,12 +32,10 @@ fun MyFloatingActionButton(
     onState: (Boolean) -> Unit = {},
     state: Boolean = false,
     color: Int = R.color.blue_main,
-    onClick:() -> Unit = {}
 ) {
     FloatingActionButton(
         onClick = {
             onState(!state)
-            onClick()
         },
         modifier = Modifier
             .offset(x = scaleX, y = scaleY)
