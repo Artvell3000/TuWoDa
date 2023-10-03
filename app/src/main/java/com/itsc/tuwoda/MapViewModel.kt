@@ -1,5 +1,6 @@
 package com.example.test.ui
 import android.content.Context
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import com.itsc.tuwoda.R
@@ -13,6 +14,8 @@ import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
 import com.yandex.mapkit.map.Map
+import com.yandex.mapkit.map.MapObject
+import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.mapkit.mapview.MapView
@@ -62,19 +65,19 @@ class MapViewModel(
 
 
 
-    private fun getColorBridge(h:Double?):Int{
-        if (h != null) {
+    private fun getColorRiver(d:Double?):Int{
+        if (d != null) {
             when{
-                ((h>=0) && (h < 0.3)) -> {
+                ((d>=0) && (d < 0.3)) -> {
                     return R.color.r1
                 }
-                ((h>=0.3) && (h < 0.6)) -> {
+                ((d>=0.3) && (d < 0.6)) -> {
                     return R.color.r2
                 }
-                ((h>=0.6) && (h < 0.9)) -> {
+                ((d>=0.6) && (d < 0.9)) -> {
                     return R.color.r3
                 }
-                ((h>=0.9) && (h < 1.2)) -> {
+                ((d>=0.9) && (d < 1.2)) -> {
                     return R.color.r4
                 }
             }
@@ -82,6 +85,7 @@ class MapViewModel(
         return R.color.gray
 
     }
+    /*
     fun addBridge(b: BridgeData){
 
         val bridge:PolylineMapObject = mapView.map.mapObjects.addPolyline(
@@ -95,6 +99,8 @@ class MapViewModel(
         }
 
     }
+
+     */
 
     private fun DriwerRoad(l:List<Point>){
         mapView.map.mapObjects.addPolyline(
@@ -112,7 +118,25 @@ class MapViewModel(
 
     }
     fun drawRiverRoad(road:List<RiverData>){
-        
+        road.forEach {
+            val river = mapView.map.mapObjects.addPolyline(
+                Polyline(it.rgeometry!!)
+            )
+            river.addTapListener { mapObject, point ->
+                Toast.makeText(
+                    context,
+                    "d:${it.depth}",
+                    Toast.LENGTH_LONG
+                ).show()
+                return@addTapListener true
+            }
+            river.apply {
+                strokeWidth = 5f
+                setStrokeColor(ContextCompat.getColor(context, getColorRiver(it.depth)))
+                outlineWidth = 1f
+                outlineColor = ContextCompat.getColor(context, R.color.black)
+            }
+        }
     }
 
     private fun updateCenterPlacemar(imageProvider:ImageProvider){

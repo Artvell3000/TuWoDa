@@ -4,11 +4,11 @@ import com.yandex.mapkit.geometry.Point
 
 data class RiverData(
     val id:Int,
-    val name:String?,
-    val width:Double?,
-    val depth:Double?,
-    val bridge:Double?,
-    val distance:Double?,
-    val layer:Int?,
+    val name:String? = null,
+    val width:Double? = null,
+    val depth:Double? = null,
+    val bridge:Double? = null,
+    val distance:Double? = null,
+    val layer:Int? = null,
     val rgeometry:List<Point>
 )

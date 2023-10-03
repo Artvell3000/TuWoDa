@@ -183,13 +183,38 @@ class MainActivity : ComponentActivity() {
                 Point(56.513406, 85.060363),
                 Point(56.506976, 84.941411)
             )
-            mapViewModel?.addBridge(
-                BridgeData(
-                id = 0,
-                name = "bridge",
-                clearance_height = 0.4,
-                bgeometry = p
-            )
+            mapViewModel?.drawRiverRoad(
+                listOf(
+                    RiverData(
+                        id = 0,
+                        depth = 0.3,
+                        rgeometry = listOf(
+                            Point(56.616055, 84.767233),
+                            Point(56.616055, 84.767233),
+                            Point(56.599316, 84.780109),
+                            Point(56.594242, 84.796664),
+                            Point(56.590183, 84.822417),
+                        )
+                    ),
+                    RiverData(
+                        id = 1,
+                        depth = 0.7,
+                        rgeometry = listOf(
+                            Point(56.590183, 84.822417),
+                            Point(56.594242, 84.844491),
+                            Point(56.597287, 84.867485),
+                            Point(56.595764, 84.884960),
+                        )
+                    ),
+                    RiverData(
+                        id = 2,
+                        depth = 1.1,
+                        rgeometry = listOf(
+                            Point(56.595764, 84.884960),
+                            Point(56.582062, 84.902435),
+                        )
+                    ),
+                )
             )
             Scaffold(
                 bottomBar = {
