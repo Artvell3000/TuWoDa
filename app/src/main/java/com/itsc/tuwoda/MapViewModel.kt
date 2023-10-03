@@ -1,7 +1,10 @@
 package com.example.test.ui
 import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import com.itsc.tuwoda.R
+import com.itsc.tuwoda.BridgeData
+import com.itsc.tuwoda.RiverData
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.geometry.Point
@@ -11,12 +14,9 @@ import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.PlacemarkMapObject
+import com.yandex.mapkit.map.PolylineMapObject
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.image.ImageProvider
-
-class Bridge{
-
-}
 
 class MapViewModel(
     var mapView: MapView,
@@ -59,15 +59,40 @@ class MapViewModel(
             }
         }
     }
-    fun addRoute(){
-        val l:MutableList<Point> = mutableListOf()
-        placemarks.forEach {
-            l.add(it.geometry)
+
+
+
+    private fun getColorBridge(h:Double?):Int{
+        if (h != null) {
+            when{
+                ((h>=0) && (h < 0.3)) -> {
+                    return R.color.r1
+                }
+                ((h>=0.3) && (h < 0.6)) -> {
+                    return R.color.r2
+                }
+                ((h>=0.6) && (h < 0.9)) -> {
+                    return R.color.r3
+                }
+                ((h>=0.9) && (h < 1.2)) -> {
+                    return R.color.r4
+                }
+            }
         }
-        DriwerRoad(l)
+        return R.color.gray
 
     }
-    fun addBridge(b:Bridge){
+    fun addBridge(b: BridgeData){
+
+        val bridge:PolylineMapObject = mapView.map.mapObjects.addPolyline(
+            Polyline(b.bgeometry!!)
+        )
+        bridge.apply {
+            strokeWidth = 5f
+            setStrokeColor(ContextCompat.getColor(context, getColorBridge(b.clearance_height)))
+            outlineWidth = 1f
+            outlineColor = ContextCompat.getColor(context, R.color.black)
+        }
 
     }
 
@@ -77,6 +102,17 @@ class MapViewModel(
                 l
             )
         )
+    }
+    fun addRoute(){
+        val l:MutableList<Point> = mutableListOf()
+        placemarks.forEach {
+            l.add(it.geometry)
+        }
+        DriwerRoad(l)
+
+    }
+    fun drawRiverRoad(road:List<RiverData>){
+        
     }
 
     private fun updateCenterPlacemar(imageProvider:ImageProvider){

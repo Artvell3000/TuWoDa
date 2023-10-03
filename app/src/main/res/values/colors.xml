@@ -12,4 +12,10 @@
     <color name="blue_light_main">#FF509ECD</color>
     <color name="blue_light_main_alfa">#80509ECD</color>
 
+    <color name="r2">#DC143C</color>
+    <color name="r1">#FF0000</color>
+    <color name="r3">#B22222</color>
+    <color name="r4">#8B0000</color>
+    <color name="gray">#808080</color>
 </resources>
+
