@@ -1,5 +1,6 @@
 package com.example.test.ui
 import android.content.Context
+import android.graphics.PointF
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
@@ -13,24 +14,30 @@ import com.yandex.mapkit.geometry.Polyline
 import com.yandex.mapkit.map.CameraListener
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.CameraUpdateReason
+import com.yandex.mapkit.map.IconStyle
+import com.yandex.mapkit.map.InputListener
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObject
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.PolylineMapObject
+import com.yandex.mapkit.map.TextStyle
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.runtime.image.ImageProvider
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class MapViewModel(
     var mapView: MapView,
     var context: Context
 ): ViewModel() {
 
-    var tempPlacemark:PlacemarkMapObject? = null
-    var placemarks:MutableList<PlacemarkMapObject> = mutableListOf(
-        //PlacemarkMapObject()
-    )
-
+    private var tempPlacemark:PlacemarkMapObject? = null
+    private var placemarks:MutableList<PlacemarkMapObject> = mutableListOf()
+    private var infoPlacemarks:MutableList<PlacemarkMapObject> = mutableListOf()
     private var imageProviders: kotlin.collections.Map<String, ImageProvider> = mapOf(
         "dollar" to ImageProvider.fromResource(context, R.drawable.ic_pin),
         "start_end" to ImageProvider.fromResource(context,R.drawable.ic_start_end),
@@ -38,15 +45,73 @@ class MapViewModel(
     )
     var myGeolocationPlacemark: PlacemarkMapObject? = null
 
-    var cameraListener:CameraListener? = null
+    private var cameraListener:CameraListener? = null
+    private var roadRiverListener:InputListener? = null
     private var addNewPlacemarkState:Boolean = false
 
+
+    var tapPoint:List<Pair<Double,Double>>? = null
+    var tapRiver:List<Pair<Double,Double>>? = null
     fun setMyLocation(point: Point){
         myGeolocationPlacemark = mapView.map.mapObjects.addPlacemark(
             point,
             imageProviders["start_end"]!!
         )
     }
+
+    val testInput:RiverRoadsInput = RiverRoadsInput(
+        start = Point(56.616055, 84.767233),
+        end = Point(56.582062, 84.902435),
+        s = "sudno"
+    )
+
+    val testRoad = listOf(
+            RiverData(
+                id = 0,
+                name = "first river",
+                depth = 0.3,
+                rgeometry = listOf(
+                    Point(56.616055, 84.767233),
+                    Point(56.616055, 84.767233),
+                    Point(56.599316, 84.780109),
+                    Point(56.594242, 84.796664),
+                    Point(56.590183, 84.822417),
+                )
+            ),
+            RiverData(
+                id = 1,
+                depth = 0.7,
+                name = "p river",
+                rgeometry = listOf(
+                    Point(56.590183, 84.822417),
+                    Point(56.594242, 84.844491),
+                    Point(56.597287, 84.867485),
+                    Point(56.595764, 84.884960),
+                )
+            ),
+            RiverData(
+                id = 2,
+                depth = 1.1,
+                name = "second river",
+                width = 34.5,
+                rgeometry = listOf(
+                    Point(56.595764, 84.884960),
+                    Point(56.582062, 84.902435),
+                )
+            ),
+        )
+    data class RiverRoadsInput(
+        var start:Point,
+        var end:Point,
+        var s:String
+    )
+
+    //region Algorithm
+
+
+
+    //endregion
+
     fun goToMyLocation(){
         mapView.map.apply {
             myGeolocationPlacemark?.let {
@@ -62,8 +127,6 @@ class MapViewModel(
             }
         }
     }
-
-
 
     private fun getColorRiver(d:Double?):Int{
         if (d != null) {
@@ -85,22 +148,6 @@ class MapViewModel(
         return R.color.gray
 
     }
-    /*
-    fun addBridge(b: BridgeData){
-
-        val bridge:PolylineMapObject = mapView.map.mapObjects.addPolyline(
-            Polyline(b.bgeometry!!)
-        )
-        bridge.apply {
-            strokeWidth = 5f
-            setStrokeColor(ContextCompat.getColor(context, getColorBridge(b.clearance_height)))
-            outlineWidth = 1f
-            outlineColor = ContextCompat.getColor(context, R.color.black)
-        }
-
-    }
-
-     */
 
     private fun DriwerRoad(l:List<Point>){
         mapView.map.mapObjects.addPolyline(
@@ -109,6 +156,8 @@ class MapViewModel(
             )
         )
     }
+
+
     fun addRoute(){
         val l:MutableList<Point> = mutableListOf()
         placemarks.forEach {
@@ -117,25 +166,117 @@ class MapViewModel(
         DriwerRoad(l)
 
     }
-    fun drawRiverRoad(road:List<RiverData>){
+
+    fun goToStateSearchingPointCraph(grahp:List<List<Pair<Double,Double>>>){
+        roadRiverListener = object : InputListener {
+            override fun onMapTap(map: Map, point: Point) {
+                var minD:Double = 9999999.0
+                for(part in grahp){
+                    for(p in part) {
+                        val newMinDist = abs(min(
+                            minD,
+                            sqrt(
+                                (abs(p.second-point.longitude)).pow(2)
+                                        +
+                                   (abs(p.first-point.latitude)).pow(2)
+                            ))
+                        )
+                        if(minD != newMinDist){
+                            minD = newMinDist
+                            tapPoint = listOf(p)
+                            tapRiver = part
+                            Toast.makeText(
+                                context,
+                                "${tapPoint!![0].first} : ${tapPoint!![0].second}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+            }
+
+            override fun onMapLongTap(map: Map, point: Point) {
+                // Handle long tap ...
+            }
+        }
+        mapView.map.addInputListener(roadRiverListener!!)
+    }
+    fun drawRiverRoad(road:List<RiverData>) {
         road.forEach {
             val river = mapView.map.mapObjects.addPolyline(
                 Polyline(it.rgeometry!!)
             )
-            river.addTapListener { mapObject, point ->
-                Toast.makeText(
-                    context,
-                    "d:${it.depth}",
-                    Toast.LENGTH_LONG
-                ).show()
-                return@addTapListener true
-            }
             river.apply {
                 strokeWidth = 5f
                 setStrokeColor(ContextCompat.getColor(context, getColorRiver(it.depth)))
                 outlineWidth = 1f
                 outlineColor = ContextCompat.getColor(context, R.color.black)
             }
+
+            val infoPoint = it.rgeometry[it.rgeometry.size / 2]
+            val infoPlacemarkMapObject = mapView.map.mapObjects.addPlacemark(
+                infoPoint
+            )
+            //region val infoText
+            val infoText = (
+                    "" + if (it.name != null) { "name: ${it.name} \n" } else ""
+                    + if (it.width != null) { "width: ${it.width} \n" } else ""
+                    + if (it.depth != null) { "depth: ${it.depth} \n" } else ""
+                    + if (it.bridge != null) { "bridge: ${it.bridge} \n" } else ""
+                    + if (it.distance != null) { "distance: ${it.distance} \n" } else ""
+                    )
+            //endregion
+
+            infoPlacemarkMapObject.useCompositeIcon().apply {
+                setIcon(
+                    "pin",
+                    imageProviders["dollar"]!!,
+                    IconStyle().apply {
+                        anchor = PointF(0.5f, 1.0f)
+                        scale = 0.9f
+                    }
+                )
+            }
+            /*
+            roadRiverListener = object : InputListener {
+                override fun onMapTap(map: Map, point: Point) {
+                    var minD:Double = 9999999.0
+                    var minDR:RiverData = road[0]
+                    for(part in road){
+                        for(p in part.rgeometry) {
+                            val newMinDist = min(
+                                minD,
+                                sqrt(
+                                (abs(p.longitude-point.longitude)).pow(2)
+                                        +
+                                    (abs(p.latitude-point.latitude)).pow(2)
+                                )
+                            )
+                            if(minD != newMinDist){
+                                minDR = part
+                                minD = newMinDist
+                            }
+                        }
+                    }
+                    if(abs(minD) < 0.01){
+                        infoPlacemarkMapObject.geometry = point
+                        Toast.makeText(
+                            context,
+                            minDR.name.toString(),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                }
+
+                override fun onMapLongTap(map: Map, point: Point) {
+                    // Handle long tap ...
+                }
+            }
+            mapView.map.addInputListener(roadRiverListener!!)
+
+             */
+
+            infoPlacemarks.add(infoPlacemarkMapObject)
         }
     }
 

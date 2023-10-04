@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.yandex.mapkit.geometry.Point
 
 class MyViewModel:ViewModel() {
     var stateMap by mutableStateOf(true)
