@@ -108,7 +108,34 @@ class MapViewModel(
 
     //region Algorithm
 
+    var mapStartX:kotlin.collections.Map<Double, Int> = mapOf()
+    var mapStartY:kotlin.collections.Map<Double, Int> = mapOf()
+    var mapEndX:kotlin.collections.Map<Double, Int> = mapOf()
+    var mapEndY:kotlin.collections.Map<Double, Int> = mapOf()
+    var table :kotlin.collections.Map<Double, Double> = mapOf()
 
+    var data:List<List<Pair<Double, Double>>> = listOf(
+        listOf(
+            Pair(56.616055, 84.767233),
+            Pair(56.616055, 84.767233),
+            Pair(56.599316, 84.780109),
+            Pair(56.594242, 84.796664),
+            Pair(56.590183, 84.822417),
+        ),
+        listOf(
+            Pair(56.590183, 84.822417),
+            Pair(56.594242, 84.844491),
+            Pair(56.597287, 84.867485),
+            Pair(56.595764, 84.884960),
+        ),
+        listOf(
+            Pair(56.595764, 84.884960),
+            Pair(56.582062, 84.902435),
+        ),
+    )
+    fun initMaps(){
+
+    }
 
     //endregion
 
